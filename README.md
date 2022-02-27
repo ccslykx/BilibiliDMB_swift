@@ -22,7 +22,7 @@ b站直播弹幕板，iOS端
 运行即可。
 
 方案二：
-下载release的`.swiftpm`文件，复制到iPad下的Playground文件夹（可能是iCloud下），点击打开。（未测试）
+下载release的[BilibiliDMB_Preview.swiftpm](https://github.com/ccslykx/BilibiliDMB_swift/releases/download/Preview/BilibiliDMB_Preview.swiftpm)文件，复制到iPad下的Playground文件夹（可能是iCloud下），点击打开。（未测试）
 
 ## 后续计划
 - [ ] 增加自动重连（切后台后会被停止运行）
