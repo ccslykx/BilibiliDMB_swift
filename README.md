@@ -1,9 +1,10 @@
 # BilibiliDMB_swift
-b站直播弹幕板，iOS端
+B站直播弹幕板，iOS端
 
 野生的程序员，第一次用swift，在iPad Air 4上编写。现用现学，难免有些问题，现在只是能自己凑合着用。
 
 > 原理参考：https://github.com/lovelyyoshino/Bilibili-Live-API/blob/master/API.WebSocket.md
+> 
 > 部分代码参考了https://github.com/komeiji-koishi-ww/bilibili_danmakuhime_swiftUI
 
 软件界面预览如下：
