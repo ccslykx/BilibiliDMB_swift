@@ -12,9 +12,9 @@ b站直播弹幕板，iOS端
 ## 使用方法
 > 我没有苹果的开发者账号，所以没法发布到TestFlight或AppStore。
 
-首先iPad上下载Playground
+首先iPad上下载Playground,然后，
 
-然后，方案一：
+方案一：
 新建一个项目，自行添加并复制BilibiliDMB目录下的swift文件，添加依赖的软件包
 - [Starscream](https://github.com/daltoniam/Starscream.git)
 - [SwiftyJSON](https://github.com/SwiftyJSON/SwiftyJSON.git)
