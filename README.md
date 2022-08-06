@@ -23,7 +23,7 @@ B站直播弹幕板，iOS端
 运行即可。
 
 方案二：
-下载release的`.zip`文件，复制到iPad下（可能是iCloud下）的Playground文件夹，点击打开。（未测试，可能也需要添加依赖软件包）
+下载release的`.zip`文件，解压出`.swiftpm`文件，复制到iPad下（可能是iCloud下）的Playgrounds文件夹（路径为 `我的iPad/Playgrounds` 或 `iCloud云盘/Playgrouds` )，在文件App内点击打开。（未测试，可能也需要添加依赖软件包）
 
 ## 后续计划
 - [ ] 增加自动重连（切后台后会被停止运行）
