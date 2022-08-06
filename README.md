@@ -13,7 +13,7 @@ B站直播弹幕板，iOS端
 ## 使用方法
 > 我没有苹果的开发者账号，所以没法发布到TestFlight或AppStore。
 
-首先iPad上下载Playground,然后，
+首先iPad上**下载Playground**，然后，
 
 方案一：
 新建一个项目，自行添加并复制BilibiliDMB目录下的swift文件，添加依赖的软件包
@@ -23,7 +23,7 @@ B站直播弹幕板，iOS端
 运行即可。
 
 方案二：
-下载release的[BilibiliDMB_Preview.swiftpm](https://github.com/ccslykx/BilibiliDMB_swift/releases/download/Preview/BilibiliDMB_Preview.swiftpm)文件，复制到iPad下的Playground文件夹（可能是iCloud下），点击打开。（未测试）
+下载release的`.zip`文件，复制到iPad下（可能是iCloud下）的Playground文件夹，点击打开。（未测试，可能也需要添加依赖软件包）
 
 ## 后续计划
 - [ ] 增加自动重连（切后台后会被停止运行）
