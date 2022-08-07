@@ -19,14 +19,18 @@ B站直播弹幕板，iOS端
 - SwiftyJSON: https://github.com/SwiftyJSON/SwiftyJSON.git 或 https://gitee.com/idoing/SwiftyJSON.git
 - SWCompression: https://github.com/tsolomko/SWCompression.git 或 https://gitee.com/L1MeN9Yu_Mirror/SWCompression.git
 
-添加依赖示范如下视频，注意在输入链接后需要按一下 `Enter`(`Return`)键来获取版本信息：
-[添加依赖示范](https://user-images.githubusercontent.com/56810549/183272525-5d3aeba6-8d66-438a-b183-68c8845cd27d.MP4)
+[点我看添加依赖示范视频](https://user-images.githubusercontent.com/56810549/183272525-5d3aeba6-8d66-438a-b183-68c8845cd27d.MP4)，注意在输入链接后需要按一下 `Enter`(`Return`)键来获取版本信息。
 
-运行即可。
+添加好依赖运行即可。
+
+另：
+  - 可设置默认直播间ID，`ContentView`文件里`liveRoomID`变量，默认为`23165114`。
+  - 可根据自己需要修改默认显示弹幕容量（显示最新弹幕条数），`ContentView`文件里`biliLiveWebSocket`的参数`capacity`，默认为20。如同时存在大量弹幕，可能会占用大量系统资源甚至导致程序闪退。
+  - 宜**设置iPad屏幕常亮**（OLED屏慎用，防止烧屏）。由于苹果的后台机制，在切到后台或锁屏后，可能会与弹幕服务器断开连接，需要手动断开再重新连接。
 
 ## 后续计划
 - [ ] 增加自动重连（切后台后会被停止运行）
 - [ ] 提示有人关注了直播间
 - [ ] 优化礼物显示
-- [ ] 优化内存占用（测试时，200w人气的直播间，弹幕刷屏10多分钟，软件会闪退，可能是内存占用过高）
+- [x] 优化内存占用（测试时，200w人气的直播间，弹幕刷屏10多分钟，软件会闪退，可能是内存占用过高）
 - [ ] 写一些有用的bug（划掉）
