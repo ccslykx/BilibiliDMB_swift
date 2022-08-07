@@ -13,17 +13,16 @@ B站直播弹幕板，iOS端
 ## 使用方法
 > 我没有苹果的开发者账号，所以没法发布到TestFlight或AppStore。
 
-首先iPad上**下载Playground**，然后，
+首先iPad上**下载Playground**，然后下载最新的[Release的`.zip`文件](https://github.com/ccslykx/BilibiliDMB_swift/releases/download/0_1_1/BilibiliDMB_0_1_1.zip)，解压出`.swiftpm`文件，复制到iCloud下（也可能是`我的iPad`下，此步复制到iCloud可能需要使用电脑操作）的Playgrounds文件夹（路径为`iCloud云盘/Playgrouds` 或 `我的iPad/Playgrounds`)，在文件App内点击打开会自动跳转到Playground，添加下面三个依赖的软件包：
 
-方案一：
-新建一个项目，自行添加并复制BilibiliDMB目录下的swift文件，添加依赖的软件包
-- [Starscream](https://github.com/daltoniam/Starscream.git)
-- [SwiftyJSON](https://github.com/SwiftyJSON/SwiftyJSON.git)
-- [SWCompression](https://github.com/tsolomko/SWCompression.git)
+- Starscream: https://github.com/daltoniam/Starscream.git 或 https://gitee.com/mirrors/starscream.git
+- SwiftyJSON: https://github.com/SwiftyJSON/SwiftyJSON.git 或 https://gitee.com/idoing/SwiftyJSON.git
+- SWCompression: https://github.com/tsolomko/SWCompression.git 或 https://gitee.com/L1MeN9Yu_Mirror/SWCompression.git
+
+添加依赖示范如下视频，注意在输入链接后需要按一下 `Enter`(`Return`)键来获取版本信息：
+[添加依赖示范](https://user-images.githubusercontent.com/56810549/183272525-5d3aeba6-8d66-438a-b183-68c8845cd27d.MP4)
+
 运行即可。
-
-方案二：
-下载release的`.zip`文件，解压出`.swiftpm`文件，复制到iPad下（可能是iCloud下）的Playgrounds文件夹（路径为 `我的iPad/Playgrounds` 或 `iCloud云盘/Playgrouds` )，在文件App内点击打开。（未测试，可能也需要添加依赖软件包）
 
 ## 后续计划
 - [ ] 增加自动重连（切后台后会被停止运行）
