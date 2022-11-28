@@ -4,6 +4,9 @@ import SwiftyJSON // https://github.com/SwiftyJSON/SwiftyJSON.git
 import SWCompression // https://github.com/tsolomko/SWCompression.git
 
 class biliLiveWebSocket: NSObject, ObservableObject {
+    // 默认弹幕容量
+    var capcity: Int = 20
+    
     // 房间ID
     var roomid0: String = ""
     // 真实房间ID
@@ -16,30 +19,41 @@ class biliLiveWebSocket: NSObject, ObservableObject {
     var wss_port: Int = 443
     // token，由API获取
     var token: String = ""
-    var socket: WebSocket!
+    var socket: WebSocket = WebSocket(request: URLRequest(url: URL(string: "wss://broadcastlv.chat.bilibili.com:443/sub")!))
     // 刷新速率（ms）
     var refreshRate: Int = 1000
+    
     // 两个API
     let apiGetInfoByRoom = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id="
     let apiGetDanmuInfo = "https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo?id="
     
     var heartbeatTimer: Timer? = nil
+    var reConnectTimer: Timer? = nil
+    var isConnected: Bool = false
+//    var pingCount: Int = 0
+//    var lastPingCount: Int = 0
+    var receiveCounter: UInt64 = 0
+    var lastReceiveCounts: UInt64 = 0
     
-    @Published var DMs: [DM] = []
-    @Published var GIFTs: [GIFT] = []
-    @Published var ENTRYs: [ENTRY] = []
+    @Published var DMs: FixedSizeArray<DM> 
+    @Published var GIFTs: FixedSizeArray<GIFT>
+    @Published var ENTRYs: FixedSizeArray<ENTRY>
     
     override init() {
+        DMs = FixedSizeArray<DM>(maxSize: capcity)
+        GIFTs = FixedSizeArray<GIFT>(maxSize: capcity)
+        ENTRYs = FixedSizeArray<ENTRY>(maxSize: capcity)
         super.init()
-        DMs.reserveCapacity(3)
-        GIFTs.reserveCapacity(3)
-        ENTRYs.reserveCapacity(3)
+        socket.delegate = self
     }
 
     enum message: String {
         case dm = "DANMU_MSG" //弹幕消息
         case gift = "SEND_GIFT" //投喂礼物
+        //case comboGift = "COMBO_SEND" //连击礼物
+        //LIVE_INTERACTIVE_GAME
         case entry = "INTERACT_WORD" //进入房间
+        //case ENTRY_EFFECT //欢迎舰长进入房间
     }
     
     private func preConnect(room: String) {
@@ -58,10 +72,28 @@ class biliLiveWebSocket: NSObject, ObservableObject {
     
     func connect(room: String) {
         self.preConnect(room: room)
-        var wsURL: URL = URL(string: "wss://broadcastlv.chat.bilibili.com:443/sub")!
-        socket = WebSocket(request: URLRequest(url: wsURL))
-        socket.delegate = self
+//        var wsURL: URL = URL(string: "wss://broadcastlv.chat.bilibili.com:443/sub")!
+//        if SSL {
+//            wsURL = URL(string: "wss://" + address + ":" + String(wss_port) + "/sub")!
+//        } else {
+//            wsURL = URL(string: "ws://" + address + ":" + String(ws_port) + "/sub")!
+//        }
+        //print("[log] wsURL = \(wsURL)")
+
+        _log("preConnected")
+//        socket = WebSocket(request: URLRequest(url: wsURL))
+        _log("socket = WebSocket")
         socket.connect()
+        _log("socket connect")
+        isConnected = true
+    }
+    
+    func disConnect() {
+        if (isConnected) {
+            socket.disconnect()
+            isConnected = false
+            DMs.append(newElement: DM(timestamp: Int(Date.now.timeIntervalSince1970), uid: 0, color: 16777215, metal_level: 0, metal_color: 0, metal_name: "系统提示", uname: "系统提示", content: "断开连接"))
+        }
     }
     
     func packet(_ type:Int) -> Data { 
@@ -77,7 +109,6 @@ class biliLiveWebSocket: NSObject, ObservableObject {
             
         default: //心跳包
             bodyDatas = "{}".data(using: String.Encoding.utf8)!
-            
         }
         
         //header总长度,  body长度+header长度
@@ -125,22 +156,31 @@ class biliLiveWebSocket: NSObject, ObservableObject {
         
         switch protocolVer._2BytesToInt() {
         case 0: // JSON
+            _log("[Protocol Version] 0")
             try! result = JSON(data: body).rawString()!
             
         case 1: // 人气值
+            _log("[Protocol Version] 1")
             break
             
         case 2: // zlib JSON
+            _log("[Protocol Version] 2")
+            _log("[Operation] \(operation._4BytesToInt())")
             guard let unzipData = try? ZlibArchive.unarchive(archive: body) else {
-                print("[Warning] Failed Unzip Data")
+                _log("[Warning] Failed Unzip Data")
                 break
             }
+            //print("Unzipped")
+            //result = unpackUnzipData(data: unzipData as Data)
             unpackUnzipData(data: unzipData)
+            //print("Done!")
             
         case 3: // brotli JSON
+            _log("[Protocol Version] 3")
             break
             
         default:
+            _log("[Protocol Version] default (\(protocolVer._2BytesToInt()))")
             break
         }
         
@@ -149,6 +189,7 @@ class biliLiveWebSocket: NSObject, ObservableObject {
     
     func unpackUnzipData(data: Data) {
         let bodyLen = data.subdata(in: Range(NSRange(location: 0, length: 4))!)._4BytesToInt()
+        //print("[BodyLen] \(bodyLen)")
         if bodyLen > 16 {
             let cur = data.subdata(in: Range(NSRange(location: 16, length: bodyLen-16))!)
             A(json: JSON(cur))
@@ -164,7 +205,7 @@ class biliLiveWebSocket: NSObject, ObservableObject {
         case message.dm.rawValue:
             if json["info"].arrayValue[3].count <= 0 {
                 DMs.append(
-                    DM(
+                    newElement: DM(
                         timestamp: json["info"].arrayValue[9]["ts"].intValue,
                         uid: json["info"].arrayValue[2].arrayValue[0].intValue,
                         color: json["info"].arrayValue[0].arrayValue[3].uInt32Value, //DEC
@@ -177,7 +218,7 @@ class biliLiveWebSocket: NSObject, ObservableObject {
                 )
             } else {
                 DMs.append(
-                    DM(
+                    newElement: DM(
                         timestamp: json["info"].arrayValue[9]["ts"].intValue,
                         uid: json["info"].arrayValue[2].arrayValue[0].intValue,
                         color: json["info"].arrayValue[0].arrayValue[3].uInt32Value, //DEC
@@ -189,9 +230,10 @@ class biliLiveWebSocket: NSObject, ObservableObject {
                     )
                 )
             }
+            
         case message.gift.rawValue:
             GIFTs.append(
-                GIFT(
+                newElement: GIFT(
                     is_first: json["data"]["is_first"].boolValue,
                     timestamp: json["data"]["timestamp"].intValue,
                     
@@ -218,7 +260,7 @@ class biliLiveWebSocket: NSObject, ObservableObject {
         
         case message.entry.rawValue:
             ENTRYs.append(
-                ENTRY(
+                newElement: ENTRY(
                     timestamp: json["data"]["timestamp"].intValue,
                     metal_level: json["data"]["fans_medal"]["metal_level"].intValue,
                     metal_color: json["data"]["fans_medal"]["metal_color"].uInt32Value,
@@ -238,54 +280,66 @@ class biliLiveWebSocket: NSObject, ObservableObject {
         }
         RunLoop.current.add(heartbeatTimer!, forMode: .common)
     }
+    
+//    @objc func reConnect() {
+//        reConnectTimer = Timer(timeInterval: 10, repeats: true) {_ in
+//            // 每10秒检测一次，如果未接收到任何信息，可能连接已经断开
+//            if (self.receiveCounter > self.lastReceiveCounts) {
+//                self.lastReceiveCounts = self.receiveCounter
+//            } else {
+//                print("[Warning] Reconnecting ...")
+//                self.socket.connect()
+//                print("[Warning] Reconnect successed")
+//            }
+//        }
+//    }
 }
 
 extension biliLiveWebSocket: WebSocketDelegate {
     func didReceive(event: WebSocketEvent, client: WebSocket) {
+        receiveCounter += 1
         switch event {
         
         case .connected(let header):
-            print("[log] Connected! Header is \(header)")
+            DMs.append(newElement: DM(timestamp: Int(Date.now.timeIntervalSince1970), uid: 0, color: 16777215, metal_level: 0, metal_color: 0, metal_name: "系统提示", uname: "系统提示", content: "连接成功"))
+            _log("[log] Connected! Header is \(header)")
             socket.write(data: self.packet(7)) {
                 self.performSelector(onMainThread: #selector(self.sendHeartbeat), with: nil, waitUntilDone: false) // NSObject
+//                self.performSelector(onMainThread: #selector(self.reConnect), with: nil, waitUntilDone: false) // NSObject
             }
             
         case .disconnected(let reason, let code):
-            print("[log] Disconnected: \(reason) with code: \(code)")
+            _log("[log] Disconnected: \(reason) with code: \(code)")
+            isConnected = false
+            _log("[isConnected]: \(isConnected)")
             
         case .binary(let data):
+            //print("[Received] binary: \(data)")//\n[Received json] \(json)")
             unpack(data: data)
             
-        case .text(_):
-            break
+        case .text(let str):
+            _log("[Received] \(str)")
             
         case .error(let error):
-            print("[Error] \(String(describing: error))")
+            _log("[Error] \(String(describing: error))")
             
         case .cancelled:
-            break
+            _log("[log] Cancelled")
             
-        case .ping(_), .pong(_), .viabilityChanged(_), .reconnectSuggested(_):
-            break
+        case .ping(_):
+//            pingCount += 1
+            _log("[Ping]")
+        
+        case .pong(_):
+            _log("[Pong]")
+            
+        case.viabilityChanged(let viabilityChanged):
+            _log("[viabilityChanged] \(viabilityChanged)")
+            
+        case.reconnectSuggested(let reconnectSuggested):
+            _log("[reconnectSuggested] \(reconnectSuggested)")
                 
         }
     }
 }
 
-extension Data {
-    func _4BytesToInt() -> Int {
-        var value: UInt32 = 0
-        let data = NSData(bytes: [UInt8](self), length: self.count)
-        data.getBytes(&value, length: self.count) // 把data以字节方式拷贝给value？
-        value = UInt32(bigEndian: value)
-        return Int(value)
-    }
-    
-    func _2BytesToInt() -> Int {
-        var value: UInt16 = 0
-        let data = NSData(bytes: [UInt8](self), length: self.count)
-        data.getBytes(&value, length: self.count) // 把data以字节方式拷贝给value？
-        value = UInt16(bigEndian: value)
-        return Int(value)
-    }
-}

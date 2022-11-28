@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct MedalView: View {
-    var level: Int
-    var color: UInt32
-    var name: String
+    var level: Int        // 粉丝等级
+    var color: UInt32     // 粉丝牌颜色
+    var name: String      // 粉丝牌名称
     
     var body: some View {
         RoundedRectangle(cornerRadius: 3)

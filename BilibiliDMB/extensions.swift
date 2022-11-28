@@ -169,8 +169,6 @@ extension ENTRY: Equatable {
     }
 }
 
-
-
 extension Int {
     func timestampToDate(format: String = "yyyy年MM月dd日 HH:mm:ss") -> String{
         let df = DateFormatter()
@@ -179,6 +177,26 @@ extension Int {
         return df.string(from: date)
     }
 }
+
+
+extension Data {
+    func _4BytesToInt() -> Int {
+        var value: UInt32 = 0
+        let data = NSData(bytes: [UInt8](self), length: self.count)
+        data.getBytes(&value, length: self.count) // 把data以字节方式拷贝给value？
+        value = UInt32(bigEndian: value)
+        return Int(value)
+    }
+    
+    func _2BytesToInt() -> Int {
+        var value: UInt16 = 0
+        let data = NSData(bytes: [UInt8](self), length: self.count)
+        data.getBytes(&value, length: self.count) // 把data以字节方式拷贝给value？
+        value = UInt16(bigEndian: value)
+        return Int(value)
+    }
+}
+
 
 
 /*
@@ -213,3 +231,65 @@ extension Color {
         )
     }
 }
+
+// https://www.jianshu.com/p/04e76474ec6d
+struct FixedSizeArray<T: Equatable> : Equatable, RandomAccessCollection {    
+    private var maxSize: Int
+    private var array: [T] = []
+    var count = 0
+    
+    init (maxSize: Int) {
+        self.maxSize = maxSize
+        self.array = [T]()
+    }
+    
+    var startIndex: Int { array.startIndex }
+    var endIndex: Int { array.endIndex }
+    
+    mutating func append(newElement: T) {
+        while (count >= maxSize) {
+            array.removeFirst()
+            count -= 1
+        }
+        array.append(newElement)
+        count += 1
+    }
+    
+    mutating func setMaxSize(maxSize: Int) {
+        self.maxSize = maxSize
+    }
+    
+    static func == (l: FixedSizeArray<T>, r: FixedSizeArray<T>) -> Bool {
+        if (l.array == r.array) {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    subscript(index: Int) -> T {
+        assert(index >= 0)
+        assert(index < count)
+        return array[index]
+    }
+    
+    
+//    mutating func append(newElements: [T]) {
+//        
+//    }
+//    
+//    mutating func removeSubrange(from: Int, to: Int) {
+//        array.removeSubrange(from..<to)
+//    } 
+}
+
+enum logLevel: String {
+    case INFO = "INFO"
+    case WARNING = "WARNING"
+    case ERROR = "ERROR"
+}
+
+func _log(_ message: String, _ level: logLevel = logLevel.INFO) {
+    print("\(Date.now.formatted(date: .abbreviated, time: .standard)) [\(level)] \(message)")
+} 
+

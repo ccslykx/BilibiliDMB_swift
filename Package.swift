@@ -8,15 +8,15 @@ import PackageDescription
 import AppleProductTypes
 
 let package = Package(
-    name: "BilibiliDMB_Preview",
+    name: "我的 App",
     platforms: [
         .iOS("15.2")
     ],
     products: [
         .iOSApplication(
-            name: "BilibiliDMB_Preview",
+            name: "我的 App",
             targets: ["AppModule"],
-            displayVersion: "0.0.1",
+            displayVersion: "1.0",
             bundleVersion: "1",
             iconAssetName: "AppIcon",
             accentColorAssetName: "AccentColor",
